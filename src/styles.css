@@ -95,7 +95,7 @@ a {
 
 .track-row {
   display: grid;
-  grid-template-columns: 32px 1fr 80px;
+  grid-template-columns: 1fr 80px;
   padding: 6px 12px;
   cursor: pointer;
   align-items: center;
@@ -107,12 +107,6 @@ a {
 
 .track-row.selected {
   background: #e8e8e8;
-}
-
-.track-number {
-  color: #999;
-  text-align: right;
-  padding-right: 12px;
 }
 
 .track-duration {
