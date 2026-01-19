@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlaylistPlaylistNameRouteImport } from './routes/playlist.$playlistName'
 import { Route as ArtistArtistNameRouteImport } from './routes/artist.$artistName'
 import { Route as AlbumAlbumTitleRouteImport } from './routes/album.$albumTitle'
+import { Route as ArtistArtistNameIndexRouteImport } from './routes/artist.$artistName.index'
+import { Route as ArtistArtistNameAlbumAlbumSlugRouteImport } from './routes/artist.$artistName.album.$albumSlug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,25 +36,41 @@ const AlbumAlbumTitleRoute = AlbumAlbumTitleRouteImport.update({
   path: '/album/$albumTitle',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArtistArtistNameIndexRoute = ArtistArtistNameIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ArtistArtistNameRoute,
+} as any)
+const ArtistArtistNameAlbumAlbumSlugRoute =
+  ArtistArtistNameAlbumAlbumSlugRouteImport.update({
+    id: '/album/$albumSlug',
+    path: '/album/$albumSlug',
+    getParentRoute: () => ArtistArtistNameRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/album/$albumTitle': typeof AlbumAlbumTitleRoute
-  '/artist/$artistName': typeof ArtistArtistNameRoute
+  '/artist/$artistName': typeof ArtistArtistNameRouteWithChildren
   '/playlist/$playlistName': typeof PlaylistPlaylistNameRoute
+  '/artist/$artistName/': typeof ArtistArtistNameIndexRoute
+  '/artist/$artistName/album/$albumSlug': typeof ArtistArtistNameAlbumAlbumSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/album/$albumTitle': typeof AlbumAlbumTitleRoute
-  '/artist/$artistName': typeof ArtistArtistNameRoute
   '/playlist/$playlistName': typeof PlaylistPlaylistNameRoute
+  '/artist/$artistName': typeof ArtistArtistNameIndexRoute
+  '/artist/$artistName/album/$albumSlug': typeof ArtistArtistNameAlbumAlbumSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/album/$albumTitle': typeof AlbumAlbumTitleRoute
-  '/artist/$artistName': typeof ArtistArtistNameRoute
+  '/artist/$artistName': typeof ArtistArtistNameRouteWithChildren
   '/playlist/$playlistName': typeof PlaylistPlaylistNameRoute
+  '/artist/$artistName/': typeof ArtistArtistNameIndexRoute
+  '/artist/$artistName/album/$albumSlug': typeof ArtistArtistNameAlbumAlbumSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -61,24 +79,29 @@ export interface FileRouteTypes {
     | '/album/$albumTitle'
     | '/artist/$artistName'
     | '/playlist/$playlistName'
+    | '/artist/$artistName/'
+    | '/artist/$artistName/album/$albumSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/album/$albumTitle'
-    | '/artist/$artistName'
     | '/playlist/$playlistName'
+    | '/artist/$artistName'
+    | '/artist/$artistName/album/$albumSlug'
   id:
     | '__root__'
     | '/'
     | '/album/$albumTitle'
     | '/artist/$artistName'
     | '/playlist/$playlistName'
+    | '/artist/$artistName/'
+    | '/artist/$artistName/album/$albumSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlbumAlbumTitleRoute: typeof AlbumAlbumTitleRoute
-  ArtistArtistNameRoute: typeof ArtistArtistNameRoute
+  ArtistArtistNameRoute: typeof ArtistArtistNameRouteWithChildren
   PlaylistPlaylistNameRoute: typeof PlaylistPlaylistNameRoute
 }
 
@@ -112,13 +135,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlbumAlbumTitleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/artist/$artistName/': {
+      id: '/artist/$artistName/'
+      path: '/'
+      fullPath: '/artist/$artistName/'
+      preLoaderRoute: typeof ArtistArtistNameIndexRouteImport
+      parentRoute: typeof ArtistArtistNameRoute
+    }
+    '/artist/$artistName/album/$albumSlug': {
+      id: '/artist/$artistName/album/$albumSlug'
+      path: '/album/$albumSlug'
+      fullPath: '/artist/$artistName/album/$albumSlug'
+      preLoaderRoute: typeof ArtistArtistNameAlbumAlbumSlugRouteImport
+      parentRoute: typeof ArtistArtistNameRoute
+    }
   }
 }
+
+interface ArtistArtistNameRouteChildren {
+  ArtistArtistNameIndexRoute: typeof ArtistArtistNameIndexRoute
+  ArtistArtistNameAlbumAlbumSlugRoute: typeof ArtistArtistNameAlbumAlbumSlugRoute
+}
+
+const ArtistArtistNameRouteChildren: ArtistArtistNameRouteChildren = {
+  ArtistArtistNameIndexRoute: ArtistArtistNameIndexRoute,
+  ArtistArtistNameAlbumAlbumSlugRoute: ArtistArtistNameAlbumAlbumSlugRoute,
+}
+
+const ArtistArtistNameRouteWithChildren =
+  ArtistArtistNameRoute._addFileChildren(ArtistArtistNameRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlbumAlbumTitleRoute: AlbumAlbumTitleRoute,
-  ArtistArtistNameRoute: ArtistArtistNameRoute,
+  ArtistArtistNameRoute: ArtistArtistNameRouteWithChildren,
   PlaylistPlaylistNameRoute: PlaylistPlaylistNameRoute,
 }
 export const routeTree = rootRouteImport

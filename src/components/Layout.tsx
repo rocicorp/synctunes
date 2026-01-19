@@ -13,7 +13,6 @@ import {
   getPlaylistTracks,
   formatDuration,
   type Track,
-  type Artist,
   type Album,
 } from "../data/music";
 
@@ -44,19 +43,10 @@ export function Layout({
     ? getPlaylistByName(selectedPlaylistName)
     : undefined;
 
-  // Determine which artists to show
-  let displayedArtists: Artist[] = [];
-  if (selectedAlbum) {
-    // Show artists associated with this album (for collabs, could be multiple)
-    const artistIds = new Set(
-      tracks.filter((t) => t.albumId === selectedAlbum.id).map((t) => t.artistId)
-    );
-    displayedArtists = artists.filter((a) => artistIds.has(a.id));
-  } else {
-    displayedArtists = artists;
-  }
+  // Artists pane always shows all artists
+  const displayedArtists = artists;
 
-  // Determine which albums to show
+  // Albums: if artist selected, show that artist's albums; otherwise show all
   let displayedAlbums: Album[] = [];
   if (selectedArtist) {
     displayedAlbums = getAlbumsByArtist(selectedArtist.id);
@@ -64,7 +54,7 @@ export function Layout({
     displayedAlbums = albums;
   }
 
-  // Determine which tracks to show
+  // Tracks: prioritize album > artist > all
   let displayedTracks: Track[] = [];
   if (selectedPlaylist) {
     displayedTracks = getPlaylistTracks(selectedPlaylist);
@@ -124,11 +114,21 @@ export function Layout({
           <div className="pane-header">Albums</div>
           {displayedAlbums.map((album) => {
             const artist = getArtist(album.artistId);
+            // Context-aware links: if artist selected, nest under artist; otherwise use /album/
+            const linkProps = selectedArtist
+              ? {
+                  to: "/artist/$artistName/album/$albumSlug" as const,
+                  params: { artistName: selectedArtist.name, albumSlug: album.title },
+                }
+              : {
+                  to: "/album/$albumTitle" as const,
+                  params: { albumTitle: album.title },
+                };
+
             return (
               <Link
                 key={album.id}
-                to="/album/$albumTitle"
-                params={{ albumTitle: album.title }}
+                {...linkProps}
                 className={`list-item ${selectedAlbum?.id === album.id ? "selected" : ""}`}
               >
                 <div>{album.title}</div>
