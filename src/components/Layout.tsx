@@ -9,7 +9,9 @@ import {
   getTracksByArtist,
   getArtist,
   getAlbum,
-  getPlaylistByName,
+  getArtistBySlug,
+  getAlbumBySlug,
+  getPlaylistBySlug,
   getPlaylistTracks,
   formatDuration,
   type Track,
@@ -17,30 +19,26 @@ import {
 } from "../data/music";
 
 type LayoutProps = {
-  selectedArtistName?: string;
-  selectedAlbumTitle?: string;
-  selectedPlaylistName?: string;
+  selectedArtistSlug?: string;
+  selectedAlbumSlug?: string;
+  selectedPlaylistSlug?: string;
 };
 
 export function Layout({
-  selectedArtistName,
-  selectedAlbumTitle,
-  selectedPlaylistName,
+  selectedArtistSlug,
+  selectedAlbumSlug,
+  selectedPlaylistSlug,
 }: LayoutProps) {
-  const selectedArtist = selectedArtistName
-    ? artists.find(
-        (a) => a.name.toLowerCase() === selectedArtistName.toLowerCase()
-      )
+  const selectedArtist = selectedArtistSlug
+    ? getArtistBySlug(selectedArtistSlug)
     : undefined;
 
-  const selectedAlbum = selectedAlbumTitle
-    ? albums.find(
-        (a) => a.title.toLowerCase() === selectedAlbumTitle.toLowerCase()
-      )
+  const selectedAlbum = selectedAlbumSlug
+    ? getAlbumBySlug(selectedAlbumSlug)
     : undefined;
 
-  const selectedPlaylist = selectedPlaylistName
-    ? getPlaylistByName(selectedPlaylistName)
+  const selectedPlaylist = selectedPlaylistSlug
+    ? getPlaylistBySlug(selectedPlaylistSlug)
     : undefined;
 
   // Artists pane always shows all artists
@@ -75,15 +73,15 @@ export function Layout({
         <div className="pane-header">Playlists</div>
         <Link
           to="/"
-          className={`list-item ${!selectedPlaylistName && !selectedArtistName && !selectedAlbumTitle ? "selected" : ""}`}
+          className={`list-item ${!selectedPlaylistSlug && !selectedArtistSlug && !selectedAlbumSlug ? "selected" : ""}`}
         >
           All Music
         </Link>
         {playlists.map((playlist) => (
           <Link
             key={playlist.id}
-            to="/playlist/$playlistName"
-            params={{ playlistName: playlist.name }}
+            to="/playlist/$playlistSlug"
+            params={{ playlistSlug: playlist.slug }}
             className={`list-item ${selectedPlaylist?.id === playlist.id ? "selected" : ""}`}
           >
             {playlist.name}
@@ -98,8 +96,8 @@ export function Layout({
           {displayedArtists.map((artist) => (
             <Link
               key={artist.id}
-              to="/artist/$artistName"
-              params={{ artistName: artist.name }}
+              to="/artist/$artistSlug"
+              params={{ artistSlug: artist.slug }}
               className={`list-item ${selectedArtist?.id === artist.id ? "selected" : ""}`}
             >
               {artist.name}
@@ -117,12 +115,12 @@ export function Layout({
             // Context-aware links: if artist selected, nest under artist; otherwise use /album/
             const linkProps = selectedArtist
               ? {
-                  to: "/artist/$artistName/album/$albumSlug" as const,
-                  params: { artistName: selectedArtist.name, albumSlug: album.title },
+                  to: "/artist/$artistSlug/album/$albumSlug" as const,
+                  params: { artistSlug: selectedArtist.slug, albumSlug: album.slug },
                 }
               : {
-                  to: "/album/$albumTitle" as const,
-                  params: { albumTitle: album.title },
+                  to: "/album/$albumSlug" as const,
+                  params: { albumSlug: album.slug },
                 };
 
             return (
